@@ -31,5 +31,5 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Check and assemble release
-        run: ./gradlew clean check assembleRelease --no-daemon --stacktrace
+      - name: Run checks
+        run: ./gradlew clean check --no-daemon --stacktrace

@@ -109,13 +109,13 @@ sh gradlew --offline clean check assembleRelease
 - `app/src/main/java/.../atlasappwindow` — приложение и адаптеры Android/OEM/ADB;
 - `app/src/test` — JVM-тесты геометрии, команд, preset ID и task ownership;
 - `docs/architecture.md` — границы платформы, backend-варианты и real-device acceptance;
-- `.github/workflows/android.yml` — воспроизводимая CI-проверка pull request и ветки `main`.
+- `.github/workflows/android.yml` — тесты и lint для pull request и ветки `main`, без сборки APK.
 
 ## Публикация релиза
 
-CI намеренно собирает неподписанный release APK и не хранит ключи. Публичный релиз следует
-подписать локально через игнорируемый `secure.signing.gradle`, проверить метаданные APK и приложить
-контрольную сумму SHA-256. Имя архива формируется как `<versionName>[<versionCode>]AtlasAppWindow`.
+CI не собирает и не публикует APK. Публичный релиз следует собрать и подписать локально через
+игнорируемый `secure.signing.gradle`, проверить метаданные APK и приложить контрольную сумму
+SHA-256. Имя архива формируется как `<versionName>[<versionCode>]AtlasAppWindow`.
 
 ## Технические ограничения
 
