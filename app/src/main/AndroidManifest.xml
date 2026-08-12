@@ -43,6 +43,21 @@
             android:exported="false" />
 
         <activity
+            android:name=".WindowToggleActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/window_toggle_launcher"
+            android:noHistory="true"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:theme="@style/Theme.AtlasAppWindow.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".PresetLauncherActivity"
             android:excludeFromRecents="true"
             android:exported="false"

@@ -49,12 +49,14 @@ final class ForegroundAppDetector {
                 && (users == null || users.isUserUnlocked());
     }
 
-    boolean shouldShowChrome(String targetPackage) {
-        if (!isDeviceReady()) return false;
+    ChromeVisibilityPolicy.Decision chromeVisibility(String targetPackage) {
+        boolean ready = isDeviceReady();
+        if (!ready) {
+            return ChromeVisibilityPolicy.Decision.HIDE;
+        }
         String foreground = currentForegroundPackage();
-        if (foreground == null) return false;
-        refreshHomesIfNeeded();
-        return foreground.equals(targetPackage) || homePackages.contains(foreground);
+        if (foreground != null) refreshHomesIfNeeded();
+        return ChromeVisibilityPolicy.decide(ready, foreground, targetPackage, homePackages);
     }
 
     String currentForegroundPackage() {

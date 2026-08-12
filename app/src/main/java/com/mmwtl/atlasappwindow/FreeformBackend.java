@@ -491,6 +491,10 @@ final class FreeformBackend implements WindowBackend {
 
     private void launchDirect(long generation, Preset preset, WindowBounds bounds) throws Exception {
         runOnMain(() -> {
+            if (!isCurrent(generation)) return;
+            // HOME must become the surface below the freeform task before it is launched.
+            // Pressing HOME afterwards backgrounds the freeform task on Android 11.
+            DirectFreeformLauncher.goHome(context);
             if (isCurrent(generation)) DirectFreeformLauncher.launch(context, preset, bounds);
         });
     }

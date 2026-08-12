@@ -70,12 +70,18 @@ public final class OverlayService extends Service
                     0, activePreset.component.indexOf('/'));
             try {
                 foregroundWorker.execute(() -> {
-                    boolean visible = foregroundDetector.shouldShowChrome(packageName);
+                    ChromeVisibilityPolicy.Decision decision =
+                            foregroundDetector.chromeVisibility(packageName);
                     main.post(() -> {
                         foregroundCheckInFlight = false;
                         if (destroyed || activePreset == null) return;
-                        chrome.setVisible(visible);
-                        main.postDelayed(foregroundPoll, visible
+                        if (decision == ChromeVisibilityPolicy.Decision.SHOW) {
+                            chrome.setVisible(true);
+                        } else if (decision == ChromeVisibilityPolicy.Decision.HIDE) {
+                            chrome.setVisible(false);
+                        }
+                        main.postDelayed(foregroundPoll,
+                                decision == ChromeVisibilityPolicy.Decision.SHOW
                                 ? ForegroundPollPolicy.VISIBLE_DELAY_MS
                                 : ForegroundPollPolicy.HIDDEN_DELAY_MS);
                     });
@@ -216,6 +222,9 @@ public final class OverlayService extends Service
         if (status.state == BackendStatus.State.ACTIVE && status.activePreset != null) {
             activePreset = status.activePreset;
             chrome.setWindow(activePreset, clampedBounds(), prefs.chromeStyle());
+            // Start visible. Some OEM launchers do not publish HOME through UsageStats; an
+            // unknown answer must preserve this state instead of removing the header.
+            chrome.setVisible(true);
             main.removeCallbacks(foregroundPoll);
             main.post(foregroundPoll);
         } else if (status.state == BackendStatus.State.IDLE) {

@@ -3,6 +3,7 @@
     <string name="app_name">Atlas App Window</string>
     <string name="overlay_notification_channel">Atlas App Window overlay</string>
     <string name="overlay_notification_title">Atlas App Window is active</string>
+    <string name="window_toggle_launcher">Atlas: Показать / закрыть</string>
     <string name="preset_launcher_1">Atlas: Пресет 1</string>
     <string name="preset_launcher_2">Atlas: Пресет 2</string>
     <string name="preset_launcher_3">Atlas: Пресет 3</string>
