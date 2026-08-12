@@ -1,0 +1,13 @@
+.gradle/
+.idea/
+.DS_Store
+**/.DS_Store
+local.properties
+**/build/
+*.iml
+*.jks
+*.keystore
+*.p12
+secure.signing.gradle
+adbkey
+adbkey.pub

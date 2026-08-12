@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Atlas App Window</string>
+    <string name="overlay_notification_channel">Atlas App Window overlay</string>
+    <string name="overlay_notification_title">Atlas App Window is active</string>
+</resources>
