@@ -21,6 +21,7 @@ final class Ui {
     static final int PRIMARY = Color.rgb(245, 245, 245);
     static final int SECONDARY = Color.rgb(212, 212, 212);
     static final int ACCENT = Color.rgb(120, 147, 160);
+    static final int OUTLINE = Color.rgb(115, 115, 115);
     static final int ERROR = Color.rgb(217, 130, 130);
 
     private Ui() {}
@@ -69,6 +70,19 @@ final class Ui {
         button.setPadding(dp(context, 16), dp(context, 10),
                 dp(context, 16), dp(context, 10));
         button.setBackground(background(NESTED, 8, context));
+        return button;
+    }
+
+    static Button outlinedButton(Context context, String value) {
+        Button button = button(context, value);
+        button.setBackground(stroked(Color.TRANSPARENT, 8, OUTLINE, 1, context));
+        return button;
+    }
+
+    static Button primaryButton(Context context, String value) {
+        Button button = button(context, value);
+        button.setTextColor(Color.rgb(7, 16, 20));
+        button.setBackground(background(ACCENT, 8, context));
         return button;
     }
 

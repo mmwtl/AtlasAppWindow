@@ -146,6 +146,7 @@ public final class MainActivity extends ScaledActivity {
         Ui.topMargin(intro, this, 8);
 
         root.addView(buildStatusCard());
+        root.addView(buildAdbCard());
         root.addView(buildPresetCard());
         root.addView(buildGeometryCard());
         root.addView(buildBehaviorCard());
@@ -179,7 +180,66 @@ public final class MainActivity extends ScaledActivity {
         card.addView(usage, Ui.fullWrap());
         Ui.topMargin(usage, this, 8);
 
-        Button developer = Ui.button(this, "Открыть настройки разработчика");
+        stopButton = Ui.button(this, "Остановить Atlas App Window");
+        stopButton.setOnClickListener(v -> OverlayService.stop(this));
+        card.addView(stopButton, Ui.fullWrap());
+        Ui.topMargin(stopButton, this, 10);
+        return card;
+    }
+
+    private View buildAdbCard() {
+        LinearLayout card = Ui.card(this);
+        card.addView(Ui.heading(this, "ADB подключение", 20));
+
+        LinearLayout helperRow = new LinearLayout(this);
+        helperRow.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout helperCopy = new LinearLayout(this);
+        helperCopy.setOrientation(LinearLayout.VERTICAL);
+        TextView helperTitle = Ui.heading(this, "ADB helper", 15);
+        helperCopy.addView(helperTitle, Ui.fullWrap());
+        TextView helperDescription = Ui.text(this,
+                "Опциональное подключение к локальному adbd", 13, Ui.SECONDARY);
+        helperCopy.addView(helperDescription, Ui.fullWrap());
+        Ui.topMargin(helperDescription, this, 2);
+        helperRow.addView(helperCopy, new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        TextView endpointBadge = Ui.text(this, "127.0.0.1", 12, Ui.ACCENT);
+        endpointBadge.setGravity(Gravity.CENTER);
+        endpointBadge.setPadding(Ui.dp(this, 12), Ui.dp(this, 7),
+                Ui.dp(this, 12), Ui.dp(this, 7));
+        endpointBadge.setBackground(Ui.background(Ui.NESTED, 8, this));
+        helperRow.addView(endpointBadge, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        card.addView(helperRow, Ui.fullWrap());
+        Ui.topMargin(helperRow, this, 12);
+
+        EditText host = adbField("127.0.0.1", InputType.TYPE_CLASS_TEXT);
+        host.setEnabled(false);
+        host.setAlpha(1f);
+        LinearLayout hostBox = outlinedField("Адрес ADB", host);
+        card.addView(hostBox, Ui.fullWrap());
+        Ui.topMargin(hostBox, this, 14);
+        TextView hostHint = Ui.text(this,
+                "Atlas App Window подключается только к локальному endpoint", 12, Ui.SECONDARY);
+        card.addView(hostHint, Ui.fullWrap());
+        Ui.topMargin(hostHint, this, 5);
+
+        EditText port = adbField(
+                String.valueOf(prefs.getInt(Prefs.KEY_ADB_PORT, Prefs.DEFAULT_ADB_PORT)),
+                InputType.TYPE_CLASS_NUMBER);
+        port.setHint("5555");
+        port.setSelectAllOnFocus(true);
+        LinearLayout portBox = outlinedField("Порт ADB", port);
+        card.addView(portBox, Ui.fullWrap());
+        Ui.topMargin(portBox, this, 14);
+
+        Button probe = Ui.primaryButton(this, "Сохранить и проверить");
+        probe.setOnClickListener(v -> savePortAndProbe(port));
+        card.addView(probe, Ui.fullWrap());
+        Ui.topMargin(probe, this, 12);
+
+        Button developer = Ui.outlinedButton(this, "Открыть настройки разработчика");
         developer.setOnClickListener(v -> openSettings(
                 new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS),
                 "настройки разработчика"));
@@ -196,36 +256,33 @@ public final class MainActivity extends ScaledActivity {
         adbHint.setLineSpacing(0f, 1.1f);
         card.addView(adbHint, Ui.fullWrap());
         Ui.topMargin(adbHint, this, 14);
-
-        LinearLayout portRow = new LinearLayout(this);
-        portRow.setGravity(Gravity.CENTER_VERTICAL);
-        EditText port = new EditText(this);
-        port.setText(String.valueOf(prefs.getInt(Prefs.KEY_ADB_PORT, Prefs.DEFAULT_ADB_PORT)));
-        port.setTextColor(Ui.PRIMARY);
-        port.setHintTextColor(Ui.SECONDARY);
-        port.setHint("5555");
-        port.setSingleLine(true);
-        port.setSelectAllOnFocus(true);
-        port.setInputType(InputType.TYPE_CLASS_NUMBER);
-        port.setPadding(Ui.dp(this, 14), Ui.dp(this, 10),
-                Ui.dp(this, 14), Ui.dp(this, 10));
-        port.setBackground(Ui.background(Ui.NESTED, 8, this));
-        portRow.addView(port, new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        Button probe = Ui.button(this, "Сохранить порт и проверить");
-        LinearLayout.LayoutParams probeParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        probeParams.leftMargin = Ui.dp(this, 10);
-        portRow.addView(probe, probeParams);
-        probe.setOnClickListener(v -> savePortAndProbe(port));
-        card.addView(portRow, Ui.fullWrap());
-        Ui.topMargin(portRow, this, 8);
-
-        stopButton = Ui.button(this, "Остановить Atlas App Window");
-        stopButton.setOnClickListener(v -> OverlayService.stop(this));
-        card.addView(stopButton, Ui.fullWrap());
-        Ui.topMargin(stopButton, this, 10);
         return card;
+    }
+
+    private EditText adbField(String value, int inputType) {
+        EditText field = new EditText(this);
+        field.setText(value);
+        field.setTextColor(Ui.PRIMARY);
+        field.setHintTextColor(Ui.SECONDARY);
+        field.setTextSize(16);
+        field.setSingleLine(true);
+        field.setInputType(inputType);
+        field.setPadding(0, Ui.dp(this, 5), 0, Ui.dp(this, 3));
+        field.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        return field;
+    }
+
+    private LinearLayout outlinedField(String label, EditText field) {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(Ui.dp(this, 14), Ui.dp(this, 8),
+                Ui.dp(this, 14), Ui.dp(this, 7));
+        box.setBackground(Ui.stroked(android.graphics.Color.TRANSPARENT,
+                8, Ui.OUTLINE, 1, this));
+        TextView labelView = Ui.text(this, label, 12, Ui.SECONDARY);
+        box.addView(labelView, Ui.fullWrap());
+        box.addView(field, Ui.fullWrap());
+        return box;
     }
 
     private View buildPresetCard() {
