@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -168,15 +167,14 @@ public final class MainActivity extends ScaledActivity {
         Ui.topMargin(permissionState, this, 8);
 
         Button overlay = Ui.button(this, "Разрешить рамку поверх окон");
-        overlay.setOnClickListener(v -> openSettings(new Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + getPackageName())), "настройки overlay"));
+        overlay.setOnClickListener(v -> openAppSpecificSettings(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "настройки overlay"));
         card.addView(overlay, Ui.fullWrap());
         Ui.topMargin(overlay, this, 12);
 
         Button usage = Ui.button(this, "Открыть доступ к статистике использования");
-        usage.setOnClickListener(v -> openSettings(
-                new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS), "Usage access"));
+        usage.setOnClickListener(v -> openAppSpecificSettings(
+                Settings.ACTION_USAGE_ACCESS_SETTINGS, "Usage access"));
         card.addView(usage, Ui.fullWrap());
         Ui.topMargin(usage, this, 8);
 
@@ -702,6 +700,13 @@ public final class MainActivity extends ScaledActivity {
             startActivity(intent);
         } catch (ActivityNotFoundException | SecurityException error) {
             AppLog.warn("Cannot open " + label, error);
+            Toast.makeText(this, "Прошивка не предоставляет " + label,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void openAppSpecificSettings(String action, String label) {
+        if (!SystemSettingsLauncher.open(this, action, label)) {
             Toast.makeText(this, "Прошивка не предоставляет " + label,
                     Toast.LENGTH_LONG).show();
         }

@@ -2,8 +2,8 @@ plugins {
     id 'com.android.application'
 }
 
-def appVersionCode = 6
-def appVersionName = '1.0.5'
+def appVersionCode = 7
+def appVersionName = '1.0.6'
 def secureSigningScript = providers.gradleProperty('secure.signing').orNull
 def secureSigningFile = secureSigningScript == null ? null : rootProject.file(secureSigningScript)
 
@@ -40,6 +40,7 @@ android {
 dependencies {
     implementation 'com.tananaev:adblib:1.3'
     testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'junit:junit:4.13.2'
 }
 
 tasks.withType(JavaCompile).configureEach {
