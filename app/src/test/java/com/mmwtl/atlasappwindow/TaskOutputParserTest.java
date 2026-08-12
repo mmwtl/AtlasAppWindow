@@ -79,6 +79,22 @@ public class TaskOutputParserTest {
     }
 
     @Test
+    public void uniquelySelectsFreeformTaskWithOemAdjustedBounds() {
+        String dump = ""
+                + "  * Task{aaa #11 mode=fullscreen A=1000:com.target U=0}\n"
+                + "    bounds=[0,0][1440,1920]\n"
+                + "    realActivity=com.target/.MainActivity\n"
+                + "  * Task{bbb #12 mode=freeform A=1000:com.target U=0}\n"
+                + "    bounds=[50,140][1390,1120]\n"
+                + "    realActivity=com.target/.MainActivity\n";
+
+        assertEquals(Set.of(), TaskOutputParser.verifiedTaskIdsForComponent(
+                dump, "com.target/.MainActivity", EXPECTED));
+        assertEquals(Set.of(12), TaskOutputParser.freeformTaskIdsForComponent(
+                dump, "com.target/.MainActivity"));
+    }
+
+    @Test
     public void packageHeaderDoesNotProveExactComponentOwnership() {
         String dump = ""
                 + "  * Task{aaa #15 mode=freeform A=1000:com.target U=0}\n"

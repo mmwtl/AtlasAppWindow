@@ -177,6 +177,7 @@ final class FreeformBackend implements WindowBackend {
             return;
         }
 
+        int taskId;
         if (exactIds.size() != 1) {
             Set<Integer> verifiedIds = TaskOutputParser.verifiedTaskIdsForComponent(
                     dump, preset.component, bounds);
@@ -186,33 +187,43 @@ final class FreeformBackend implements WindowBackend {
                 return;
             }
 
-            boolean allExplicitlyWrong = true;
-            for (int id : exactIds) {
-                TaskOutputParser.Verification verification =
-                        TaskOutputParser.verifyTask(dump, id, preset.component, bounds);
-                if (!isExplicitGeometryFailure(verification)) {
-                    allExplicitlyWrong = false;
-                    break;
+            Set<Integer> freeformIds = TaskOutputParser.freeformTaskIdsForComponent(
+                    dump, preset.component);
+            if (freeformIds.size() == 1) {
+                // The OEM may retain a fullscreen task alongside the one direct launch placed in
+                // freeform. Exact component + unique freeform mode is sufficient to attempt the
+                // same bounds verification/resize used for an otherwise unambiguous task.
+                taskId = freeformIds.iterator().next();
+            } else {
+                boolean allExplicitlyWrong = true;
+                for (int id : exactIds) {
+                    TaskOutputParser.Verification verification =
+                            TaskOutputParser.verifyTask(dump, id, preset.component, bounds);
+                    if (!isExplicitGeometryFailure(verification)) {
+                        allExplicitlyWrong = false;
+                        break;
+                    }
                 }
-            }
-            if (allExplicitlyWrong) {
-                rejectVisibleResult(generation,
-                        "Несколько задач launcher-компонента имеют fullscreen/неверные границы",
-                        preset);
+                if (allExplicitlyWrong) {
+                    rejectVisibleResult(generation,
+                            "Несколько задач launcher-компонента имеют fullscreen/неверные границы",
+                            preset);
+                    return;
+                }
+
+                // A successful direct launch remains useful even when the OEM dump cannot identify
+                // one task safely. Keep the visible result, but never resize/remove an unowned task.
+                prefs.putInt(Prefs.KEY_ACTIVE_TASK_ID, Prefs.NO_TASK);
+                publish(generation, BackendStatus.State.ACTIVE,
+                        preset.label + " • найдено несколько подходящих задач; "
+                                + "окно оставлено открытым, управление task отключено",
+                        preset, Prefs.NO_TASK);
                 return;
             }
-
-            // A successful direct launch remains useful even when the OEM dump cannot identify
-            // one task safely. Keep the visible result, but never resize/remove an unowned task.
-            prefs.putInt(Prefs.KEY_ACTIVE_TASK_ID, Prefs.NO_TASK);
-            publish(generation, BackendStatus.State.ACTIVE,
-                    preset.label + " • найдено несколько подходящих задач; "
-                            + "окно оставлено открытым, управление task отключено",
-                    preset, Prefs.NO_TASK);
-            return;
+        } else {
+            taskId = exactIds.iterator().next();
         }
 
-        int taskId = exactIds.iterator().next();
         TaskOutputParser.Verification before =
                 TaskOutputParser.verifyTask(dump, taskId, preset.component, bounds);
         if (before == TaskOutputParser.Verification.VERIFIED) {

@@ -82,6 +82,15 @@ final class TaskOutputParser {
         return Collections.unmodifiableSet(result);
     }
 
+    /** Returns exact-component tasks explicitly reported as freeform, regardless of bounds. */
+    static Set<Integer> freeformTaskIdsForComponent(String output, String component) {
+        Set<Integer> result = new LinkedHashSet<>();
+        for (int taskId : taskIdsForComponent(output, component)) {
+            if (reportsFreeform(output, taskId)) result.add(taskId);
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
     static Set<Integer> taskIdsForPackage(String output, String packageName) {
         String validated = CommandValidation.requirePackageName(packageName);
         Set<Integer> result = new LinkedHashSet<>();
