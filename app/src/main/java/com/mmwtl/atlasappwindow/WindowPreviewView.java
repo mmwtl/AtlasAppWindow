@@ -22,6 +22,8 @@ final class WindowPreviewView extends View {
     private int top;
     private int right;
     private int bottom;
+    private ChromeStyle chromeStyle = new ChromeStyle(true, true, true,
+            ChromeStyle.DEFAULT_HEADER_HEIGHT_DP);
 
     WindowPreviewView(Context context) {
         this(context, null);
@@ -40,6 +42,11 @@ final class WindowPreviewView extends View {
         this.top = clamp(top, 0, displayHeight);
         this.right = clamp(right, 0, displayWidth - this.left);
         this.bottom = clamp(bottom, 0, displayHeight - this.top);
+        invalidate();
+    }
+
+    void setChromeStyle(ChromeStyle style) {
+        chromeStyle = style;
         invalidate();
     }
 
@@ -82,16 +89,29 @@ final class WindowPreviewView extends View {
         float windowBottom = originY + (displayHeight - bottom) * scale;
         windowRect.set(windowLeft, windowTop,
                 Math.max(windowLeft, windowRight), Math.max(windowTop, windowBottom));
+        float radius = Ui.dp(getContext(), INNER_RADIUS_DP);
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Ui.NESTED);
-        canvas.drawRoundRect(windowRect, Ui.dp(getContext(), INNER_RADIUS_DP),
-                Ui.dp(getContext(), INNER_RADIUS_DP), paint);
+        canvas.drawRoundRect(windowRect, radius, radius, paint);
 
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(Ui.dp(getContext(), 2));
-        paint.setColor(Ui.ACCENT);
-        canvas.drawRoundRect(windowRect, Ui.dp(getContext(), INNER_RADIUS_DP),
-                Ui.dp(getContext(), INNER_RADIUS_DP), paint);
+        if (chromeStyle.headerVisible) {
+            float headerHeight = Ui.dp(getContext(), chromeStyle.headerHeightDp) * scale;
+            RectF header = new RectF(windowRect.left,
+                    Math.max(displayRect.top, windowRect.top - headerHeight),
+                    windowRect.right, windowRect.top + radius);
+            paint.setColor(0xff4a4d50);
+            canvas.drawRoundRect(header, radius, radius, paint);
+            paint.setColor(Ui.NESTED);
+            canvas.drawRect(header.left, windowRect.top, header.right, header.bottom, paint);
+        } else if (chromeStyle.controlsVisible) {
+            float controlHeight = Math.max(Ui.dp(getContext(), 10), 44f * scale);
+            float controlWidth = controlHeight * 3f;
+            RectF controls = new RectF(windowRect.right - controlWidth,
+                    Math.max(displayRect.top, windowRect.top - controlHeight - 3f),
+                    windowRect.right, Math.max(displayRect.top, windowRect.top - 3f));
+            paint.setColor(0xff4a4d50);
+            canvas.drawRoundRect(controls, radius, radius, paint);
+        }
 
         paint.setStyle(Paint.Style.FILL);
         paint.setTextAlign(Paint.Align.CENTER);
@@ -101,7 +121,9 @@ final class WindowPreviewView extends View {
                 && windowRect.height() > Ui.dp(getContext(), 34)) {
             Paint.FontMetrics metrics = paint.getFontMetrics();
             float baseline = windowRect.centerY() - (metrics.ascent + metrics.descent) / 2f;
-            canvas.drawText("FREEFORM APP", windowRect.centerX(), baseline, paint);
+            String label = chromeStyle.headerVisible && chromeStyle.titleVisible
+                    ? "APP  •  FREEFORM" : "FREEFORM APP";
+            canvas.drawText(label, windowRect.centerX(), baseline, paint);
         }
 
         paint.setColor(Ui.SECONDARY);

@@ -28,8 +28,10 @@
 3. `DirectFreeformLauncher` одним options bundle передаёт bounds и `windowingMode=5`.
 4. При доступном loopback ADB backend ищет новую задачу по точному component и проверяет её режим.
 5. Только принятый task ID разрешено resize/remove. Package-wide `force-stop` запрещён.
-6. `ChromeController` создаёт четыре `FLAG_NOT_TOUCHABLE` рамки и отдельный toolbar. Полноэкранного
-   touch-слоя нет, поэтому область вокруг task не блокируется Atlas.
+6. `ChromeController` создаёт примыкающую серую шапку или компактную плавающую группу кнопок.
+   Нетактильная маска закрывает прямоугольные углы чужой task цветом HOME и создаёт визуальное
+   скругление; сама task при этом остаётся прямоугольной. Полноэкранного touch-слоя нет, поэтому
+   область вокруг task не блокируется Atlas.
 
 ## Почему не копируется реализация GSplit
 

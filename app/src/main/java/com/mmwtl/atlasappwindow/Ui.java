@@ -44,6 +44,16 @@ final class Ui {
         return drawable;
     }
 
+    static GradientDrawable topRounded(int color, float radiusDp, Context context) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(color);
+        float radius = dp(context, radiusDp);
+        drawable.setCornerRadii(new float[] {
+                radius, radius, radius, radius, 0f, 0f, 0f, 0f
+        });
+        return drawable;
+    }
+
     static TextView text(Context context, String value, float sizeSp, int color) {
         TextView view = new TextView(context);
         view.setText(value);

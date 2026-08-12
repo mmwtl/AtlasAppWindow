@@ -148,6 +148,7 @@ public final class MainActivity extends ScaledActivity {
         root.addView(buildAdbCard());
         root.addView(buildPresetCard());
         root.addView(buildGeometryCard());
+        root.addView(buildChromeCard());
         root.addView(buildBehaviorCard());
         return scroll;
     }
@@ -166,7 +167,7 @@ public final class MainActivity extends ScaledActivity {
         card.addView(permissionState, Ui.fullWrap());
         Ui.topMargin(permissionState, this, 8);
 
-        Button overlay = Ui.button(this, "Разрешить рамку поверх окон");
+        Button overlay = Ui.button(this, "Разрешить оформление поверх окон");
         overlay.setOnClickListener(v -> openAppSpecificSettings(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "настройки overlay"));
         card.addView(overlay, Ui.fullWrap());
@@ -308,6 +309,7 @@ public final class MainActivity extends ScaledActivity {
         Ui.topMargin(note, this, 8);
 
         preview = new WindowPreviewView(this);
+        preview.setChromeStyle(prefs.chromeStyle());
         preview.setBackground(Ui.background(Ui.NESTED, 8, this));
         card.addView(preview, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 330)));
@@ -384,6 +386,97 @@ public final class MainActivity extends ScaledActivity {
         card.addView(applyScale, Ui.fullWrap());
         Ui.topMargin(applyScale, this, 8);
         return card;
+    }
+
+    @SuppressWarnings("deprecation")
+    private View buildChromeCard() {
+        LinearLayout card = Ui.card(this);
+        card.addView(Ui.heading(this, "Оформление окна", 20));
+        TextView note = Ui.text(this,
+                "Шапка примыкает к freeform-задаче без рамки. Если выключить шапку, кнопки "
+                        + "управления станут плавающей группой справа над окном. Скругление "
+                        + "визуальное: углы закрывает нетактильный overlay Atlas.",
+                13, Ui.SECONDARY);
+        note.setLineSpacing(0f, 1.08f);
+        card.addView(note, Ui.fullWrap());
+        Ui.topMargin(note, this, 8);
+
+        ChromeStyle current = prefs.chromeStyle();
+        Switch header = chromeSwitch("Показывать серую шапку", current.headerVisible);
+        Switch title = chromeSwitch("Показывать название приложения", current.titleVisible);
+        Switch controls = chromeSwitch("Показывать кнопки управления", current.controlsVisible);
+        title.setEnabled(current.headerVisible);
+
+        card.addView(header, Ui.fullWrap());
+        Ui.topMargin(header, this, 10);
+        card.addView(title, Ui.fullWrap());
+        card.addView(controls, Ui.fullWrap());
+
+        TextView heightTitle = Ui.heading(this,
+                "Высота шапки: " + current.headerHeightDp + " dp", 16);
+        card.addView(heightTitle, Ui.fullWrap());
+        Ui.topMargin(heightTitle, this, 12);
+
+        SeekBar height = new SeekBar(this);
+        height.setMax(ChromeStyle.MAX_HEADER_HEIGHT_DP - ChromeStyle.MIN_HEADER_HEIGHT_DP);
+        height.setProgress(current.headerHeightDp - ChromeStyle.MIN_HEADER_HEIGHT_DP);
+        height.setEnabled(current.headerVisible);
+        height.setOnSeekBarChangeListener(new SimpleSeekListener() {
+            private int selected = current.headerHeightDp;
+
+            @Override public void onProgressChanged(
+                    SeekBar seekBar, int progress, boolean fromUser) {
+                selected = ChromeStyle.MIN_HEADER_HEIGHT_DP + progress;
+                heightTitle.setText("Высота шапки: " + selected + " dp");
+            }
+
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {
+                prefs.putInt(Prefs.KEY_HEADER_HEIGHT, selected);
+                applyChromeSettings();
+            }
+        });
+        card.addView(height, Ui.fullWrap());
+
+        header.setOnCheckedChangeListener((button, checked) -> {
+            prefs.putBoolean(Prefs.KEY_HEADER_VISIBLE, checked);
+            title.setEnabled(checked);
+            height.setEnabled(checked);
+            applyChromeSettings();
+        });
+        title.setOnCheckedChangeListener((button, checked) -> {
+            prefs.putBoolean(Prefs.KEY_TITLE_VISIBLE, checked);
+            applyChromeSettings();
+        });
+        controls.setOnCheckedChangeListener((button, checked) -> {
+            prefs.putBoolean(Prefs.KEY_CONTROLS_VISIBLE, checked);
+            applyChromeSettings();
+        });
+
+        TextView warning = Ui.text(this,
+                "При выключенных шапке и кнопках окно останется без элементов управления Atlas; "
+                        + "закрыть его можно из настроек или уведомления.",
+                12, Ui.SECONDARY);
+        card.addView(warning, Ui.fullWrap());
+        Ui.topMargin(warning, this, 8);
+        return card;
+    }
+
+    @SuppressWarnings("deprecation")
+    private Switch chromeSwitch(String label, boolean checked) {
+        Switch toggle = new Switch(this);
+        toggle.setText(label);
+        toggle.setTextColor(Ui.PRIMARY);
+        toggle.setTextSize(14);
+        toggle.setChecked(checked);
+        toggle.setPadding(0, Ui.dp(this, 7), 0, Ui.dp(this, 7));
+        return toggle;
+    }
+
+    private void applyChromeSettings() {
+        if (preview != null) {
+            preview.setChromeStyle(prefs.chromeStyle());
+        }
+        OverlayService.updateChrome(this);
     }
 
     @SuppressWarnings("deprecation")
@@ -650,7 +743,7 @@ public final class MainActivity extends ScaledActivity {
         if (permissionState == null) return;
         boolean overlay = Settings.canDrawOverlays(this);
         boolean usage = hasUsageAccess();
-        permissionState.setText("Рамка overlay: " + yesNo(overlay)
+        permissionState.setText("Оформление overlay: " + yesNo(overlay)
                 + "  •  Usage access: " + yesNo(usage));
         permissionState.setTextColor(overlay && usage ? Ui.ACCENT : Ui.SECONDARY);
     }

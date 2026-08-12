@@ -27,6 +27,10 @@ final class Prefs {
     static final String KEY_ACTIVE_PRESET = "active_preset";
     static final String KEY_PRESETS = "presets_json";
     static final String KEY_ACTIVE_TASK_ID = "active_task_id";
+    static final String KEY_HEADER_VISIBLE = "header_visible";
+    static final String KEY_TITLE_VISIBLE = "header_title_visible";
+    static final String KEY_CONTROLS_VISIBLE = "header_controls_visible";
+    static final String KEY_HEADER_HEIGHT = "header_height_dp";
     static final int DEFAULT_ADB_PORT = 5555;
     static final int NO_TASK = -1;
     static final WindowBounds DEFAULT_BOUNDS = new WindowBounds(24, 600, 696, 1450);
@@ -98,6 +102,14 @@ final class Prefs {
                 .putInt(KEY_RIGHT, bounds.right)
                 .putInt(KEY_BOTTOM, bounds.bottom)
                 .apply();
+    }
+
+    ChromeStyle chromeStyle() {
+        return new ChromeStyle(
+                getBoolean(KEY_HEADER_VISIBLE, true),
+                getBoolean(KEY_TITLE_VISIBLE, true),
+                getBoolean(KEY_CONTROLS_VISIBLE, true),
+                getInt(KEY_HEADER_HEIGHT, ChromeStyle.DEFAULT_HEADER_HEIGHT_DP));
     }
 
     synchronized List<Preset> presets() {

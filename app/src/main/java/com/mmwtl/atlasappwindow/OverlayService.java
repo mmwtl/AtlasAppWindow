@@ -25,6 +25,8 @@ public final class OverlayService extends Service
     static final String ACTION_STOP = "com.mmwtl.atlasappwindow.internal.STOP";
     static final String ACTION_PROBE = "com.mmwtl.atlasappwindow.internal.PROBE";
     static final String ACTION_RESIZE = "com.mmwtl.atlasappwindow.internal.RESIZE";
+    static final String ACTION_UPDATE_CHROME =
+            "com.mmwtl.atlasappwindow.internal.UPDATE_CHROME";
     static final String ACTION_STATUS_CHANGED =
             "com.mmwtl.atlasappwindow.internal.STATUS_CHANGED";
 
@@ -112,6 +114,10 @@ public final class OverlayService extends Service
         startWith(context, ACTION_RESIZE, null);
     }
 
+    public static void updateChrome(Context context) {
+        if (running) startWith(context, ACTION_UPDATE_CHROME, null);
+    }
+
     public static boolean isRunning() { return running; }
     public static BackendStatus lastStatus() { return lastStatus; }
 
@@ -160,6 +166,12 @@ public final class OverlayService extends Service
             backend.resize(clampedBounds());
             return START_STICKY;
         }
+        if (ACTION_UPDATE_CHROME.equals(action)) {
+            if (activePreset != null) {
+                chrome.setWindow(activePreset, clampedBounds(), prefs.chromeStyle());
+            }
+            return START_STICKY;
+        }
         if (CommandContract.ACTION_SHOW.equals(action)
                 || CommandContract.ACTION_SWITCH.equals(action)) {
             String presetId = intent.getStringExtra(CommandContract.EXTRA_PRESET);
@@ -203,7 +215,7 @@ public final class OverlayService extends Service
         lastStatus = status;
         if (status.state == BackendStatus.State.ACTIVE && status.activePreset != null) {
             activePreset = status.activePreset;
-            chrome.setWindow(activePreset, clampedBounds());
+            chrome.setWindow(activePreset, clampedBounds(), prefs.chromeStyle());
             main.removeCallbacks(foregroundPoll);
             main.post(foregroundPoll);
         } else if (status.state == BackendStatus.State.IDLE) {
