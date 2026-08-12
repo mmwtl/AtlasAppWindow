@@ -132,7 +132,8 @@ final class FreeformBackend implements WindowBackend {
                 AppLog.warn("Task verification unavailable", error);
                 // Direct launch remains useful without local ADB, but the lack of proof is explicit.
                 publish(generation, BackendStatus.State.ACTIVE,
-                        preset.label + " • запуск запрошен • результат не проверен (ADB недоступен)",
+                        preset.label + " • запуск запрошен • результат не проверен (ADB недоступен)"
+                                + " • восстановление изменённых bounds не гарантируется",
                         preset, Prefs.NO_TASK);
             } else {
                 fail(generation, "Не удалось открыть freeform-окно: " + readable(error),

@@ -56,7 +56,10 @@ final class ForegroundAppDetector {
         }
         String foreground = currentForegroundPackage();
         if (foreground != null) refreshHomesIfNeeded();
-        return ChromeVisibilityPolicy.decide(ready, foreground, targetPackage, homePackages);
+        boolean transientAtlasActivity = context.getPackageName().equals(foreground)
+                && isTransientLauncherClass(tracker.foregroundClassName());
+        return ChromeVisibilityPolicy.decide(
+                ready, foreground, transientAtlasActivity, targetPackage, homePackages);
     }
 
     String currentForegroundPackage() {
@@ -69,7 +72,8 @@ final class ForegroundAppDetector {
             while (events != null && events.hasNextEvent()) {
                 events.getNextEvent(event);
                 if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
-                    tracker.onResumed(event.getTimeStamp(), event.getPackageName());
+                    tracker.onResumed(event.getTimeStamp(), event.getPackageName(),
+                            event.getClassName());
                 } else if (event.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED
                         || event.getEventType() == UsageEvents.Event.ACTIVITY_STOPPED) {
                     tracker.onStopped(event.getTimeStamp(), event.getPackageName());
@@ -88,6 +92,12 @@ final class ForegroundAppDetector {
             AppLog.warnRateLimited("foreground-query", "Cannot query foreground app", error);
             return null;
         }
+    }
+
+    static boolean isTransientLauncherClass(String className) {
+        return WindowToggleActivity.class.getName().equals(className)
+                || PresetLauncherActivity.class.getName().equals(className)
+                || CommandActivity.class.getName().equals(className);
     }
 
     private void refreshHomesIfNeeded() {

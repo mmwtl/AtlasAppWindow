@@ -219,7 +219,12 @@ public final class OverlayService extends Service
 
     @Override public void onBackendStatus(BackendStatus status) {
         lastStatus = status;
-        if (status.state == BackendStatus.State.ACTIVE && status.activePreset != null) {
+        if (status.state == BackendStatus.State.LAUNCHING && status.activePreset != null) {
+            // Draw against the requested bounds immediately. ADB verification may take seconds,
+            // and the OEM freeform task must not appear as an unstyled resizable rectangle first.
+            chrome.setWindow(status.activePreset, clampedBounds(), prefs.chromeStyle());
+            chrome.setVisible(true);
+        } else if (status.state == BackendStatus.State.ACTIVE && status.activePreset != null) {
             activePreset = status.activePreset;
             chrome.setWindow(activePreset, clampedBounds(), prefs.chromeStyle());
             // Start visible. Some OEM launchers do not publish HOME through UsageStats; an
@@ -227,6 +232,13 @@ public final class OverlayService extends Service
             chrome.setVisible(true);
             main.removeCallbacks(foregroundPoll);
             main.post(foregroundPoll);
+        } else if (status.state == BackendStatus.State.ERROR) {
+            if (activePreset == null) {
+                chrome.hide();
+            } else {
+                chrome.setWindow(activePreset, clampedBounds(), prefs.chromeStyle());
+                chrome.setVisible(true);
+            }
         } else if (status.state == BackendStatus.State.IDLE) {
             activePreset = null;
             chrome.hide();

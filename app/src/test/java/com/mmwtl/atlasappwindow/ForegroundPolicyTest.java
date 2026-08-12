@@ -17,12 +17,14 @@ public class ForegroundPolicyTest {
     @Test
     public void trackerIgnoresStaleEventsAndStopsOnlyCurrentPackage() {
         ForegroundEventTracker tracker = new ForegroundEventTracker();
-        tracker.onResumed(100, "com.maps");
-        tracker.onResumed(90, "com.stale");
+        tracker.onResumed(100, "com.maps", "com.maps.MainActivity");
+        tracker.onResumed(90, "com.stale", "com.stale.MainActivity");
         tracker.onStopped(110, "com.other");
         assertEquals("com.maps", tracker.foregroundPackage());
+        assertEquals("com.maps.MainActivity", tracker.foregroundClassName());
 
         tracker.onStopped(120, "com.maps");
         assertEquals(null, tracker.foregroundPackage());
+        assertEquals(null, tracker.foregroundClassName());
     }
 }
