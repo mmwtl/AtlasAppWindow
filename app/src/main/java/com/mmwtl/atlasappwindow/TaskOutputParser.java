@@ -24,6 +24,8 @@ final class TaskOutputParser {
                     + "^\\s*taskId=(\\d+):", Pattern.MULTILINE);
     private static final Pattern LEGACY_TASK_HEADER = Pattern.compile(
             "^\\s*(?:mTaskId|taskId)=(\\d+)\\b", Pattern.MULTILINE);
+    private static final Pattern STACK_HEADER = Pattern.compile(
+            "^\\s*Stack (?:#\\d+:|id=\\d+\\b).*$", Pattern.MULTILINE);
     private static final Pattern COMPONENT = Pattern.compile(
             "(?<![A-Za-z0-9_.$])([A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+)");
     private static final Pattern ROOT_COMPONENT = Pattern.compile(
@@ -186,9 +188,18 @@ final class TaskOutputParser {
                 }
             }
         }
+        List<Integer> stackStarts = new ArrayList<>();
+        Matcher stacks = STACK_HEADER.matcher(text);
+        while (stacks.find()) stackStarts.add(stacks.start());
+
         List<TaskBlock> blocks = new ArrayList<>(starts.size());
         for (int index = 0; index < starts.size(); index++) {
             int end = index + 1 < starts.size() ? starts.get(index + 1) : text.length();
+            for (int stackStart : stackStarts) {
+                if (stackStart <= starts.get(index)) continue;
+                if (stackStart < end) end = stackStart;
+                break;
+            }
             blocks.add(new TaskBlock(ids.get(index), text.substring(starts.get(index), end)));
         }
         return blocks;

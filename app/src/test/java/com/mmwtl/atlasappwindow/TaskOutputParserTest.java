@@ -45,6 +45,26 @@ public class TaskOutputParserTest {
     }
 
     @Test
+    public void stackPreambleDoesNotContaminatePreviousOemTask() {
+        String dump = ""
+                + "  Stack #12: type=standard mode=freeform\n"
+                + "    mBounds=Rect(24, 600 - 696, 1450)\n"
+                + "    * Task{aaa #12 mode=freeform A=1000:com.target U=0}\n"
+                + "      mBounds=Rect(24, 600 - 696, 1450)\n"
+                + "      realActivity=com.target/.MainActivity\n"
+                + "  Stack #10: type=standard mode=fullscreen\n"
+                + "    mBounds=Rect(0, 0 - 1440, 1920)\n"
+                + "    * Task{bbb #10 mode=fullscreen A=1001:com.other U=0}\n"
+                + "      mBounds=Rect(0, 0 - 1440, 1920)\n"
+                + "      realActivity=com.other/.MainActivity\n";
+
+        assertTrue(TaskOutputParser.reportsFreeform(dump, 12));
+        assertEquals(TaskOutputParser.Verification.VERIFIED,
+                TaskOutputParser.verifyTask(
+                        dump, 12, "com.target/.MainActivity", EXPECTED));
+    }
+
+    @Test
     public void exactComponentSelectionFailsClosedWhenAmbiguous() {
         String dump = ""
                 + "  * Task{aaa #11 mode=freeform A=1000:com.target U=0}\n"

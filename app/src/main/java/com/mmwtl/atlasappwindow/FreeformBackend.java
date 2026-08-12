@@ -149,6 +149,7 @@ final class FreeformBackend implements WindowBackend {
             WindowBounds bounds,
             OwnedTask previous) throws Exception {
         Set<Integer> exactIds = TaskOutputParser.taskIdsForComponent(dump, preset.component);
+        AppLog.info("Task evidence for " + preset.component + ": exactIds=" + exactIds);
         if (exactIds.isEmpty()) {
             String packageName = packageOf(preset.component);
             Set<Integer> packageIds = TaskOutputParser.taskIdsForPackage(dump, packageName);
@@ -436,15 +437,20 @@ final class FreeformBackend implements WindowBackend {
     private String waitForTaskEvidence(AdbShellClient shell, String component) throws Exception {
         String packageName = packageOf(component);
         String lastSuccessful = null;
+        String lastEvidence = null;
         for (int attempt = 0; attempt < 8; attempt++) {
             String dump = readTaskDump(shell, component);
             lastSuccessful = dump;
             if (!TaskOutputParser.taskIdsForComponent(dump, component).isEmpty()
                     || !TaskOutputParser.taskIdsForPackage(dump, packageName).isEmpty()) {
-                return dump;
+                // OEM ActivityTaskManager can briefly report both the old and the newly launched
+                // task. Keep sampling and assess the final evidence instead of adopting or
+                // rejecting a transient first snapshot.
+                lastEvidence = dump;
             }
-            Thread.sleep(250L);
+            if (attempt + 1 < 8) Thread.sleep(250L);
         }
+        if (lastEvidence != null) return lastEvidence;
         return lastSuccessful == null ? "" : lastSuccessful;
     }
 
