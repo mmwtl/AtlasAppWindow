@@ -214,17 +214,6 @@ public final class MainActivity extends ScaledActivity {
         card.addView(helperRow, Ui.fullWrap());
         Ui.topMargin(helperRow, this, 12);
 
-        EditText host = adbField("127.0.0.1", InputType.TYPE_CLASS_TEXT);
-        host.setEnabled(false);
-        host.setAlpha(1f);
-        LinearLayout hostBox = outlinedField("Адрес ADB", host);
-        card.addView(hostBox, Ui.fullWrap());
-        Ui.topMargin(hostBox, this, 14);
-        TextView hostHint = Ui.text(this,
-                "Atlas App Window подключается только к локальному endpoint", 12, Ui.SECONDARY);
-        card.addView(hostHint, Ui.fullWrap());
-        Ui.topMargin(hostHint, this, 5);
-
         EditText port = adbField(
                 String.valueOf(prefs.getInt(Prefs.KEY_ADB_PORT, Prefs.DEFAULT_ADB_PORT)),
                 InputType.TYPE_CLASS_NUMBER);
