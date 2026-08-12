@@ -51,6 +51,7 @@ public final class MainActivity extends ScaledActivity {
     private TextView backendState;
     private TextView permissionState;
     private Button stopButton;
+    private Button addPresetButton;
     private LinearLayout presetList;
     private WindowPreviewView preview;
     private TextView windowSize;
@@ -109,11 +110,14 @@ public final class MainActivity extends ScaledActivity {
         String component = data.getStringExtra(AppPickerActivity.EXTRA_COMPONENT);
         String label = data.getStringExtra(AppPickerActivity.EXTRA_LABEL);
         try {
-            Preset preset = new Preset(Preset.idFor(label, component), component, label);
-            prefs.savePreset(preset);
+            Preset preset = prefs.savePreset(
+                    new Preset(Preset.idFor(label, component), component, label));
             renderPresets();
-            Toast.makeText(this, "Добавлен пресет «" + preset.label + "»",
+            Toast.makeText(this, "Добавлен пресет " + preset.slot + " — «" + preset.label + "»",
                     Toast.LENGTH_SHORT).show();
+        } catch (IllegalStateException error) {
+            Toast.makeText(this, "Доступно не более " + Preset.MAX_COUNT + " пресетов",
+                    Toast.LENGTH_LONG).show();
         } catch (RuntimeException error) {
             AppLog.warn("Picker returned an invalid component", error);
             Toast.makeText(this, "Приложение не добавлено: некорректный компонент",
@@ -277,18 +281,19 @@ public final class MainActivity extends ScaledActivity {
         LinearLayout card = Ui.card(this);
         card.addView(Ui.heading(this, "Приложения", 20));
         TextView note = Ui.text(this,
-                "Пресет можно открыть здесь, динамическим ярлыком лаунчера или явным intent "
-                        + CommandContract.ACTION_SHOW + ". Повторный запуск другого пресета "
-                        + "переключает активное окно.",
+                "Доступно пять постоянных слотов. Для каждого занятого слота Atlas включает "
+                        + "отдельную обычную иконку лаунчера «Atlas: Пресет N». Это не shortcut "
+                        + "и работает на лаунчерах без поддержки ярлыков. Также доступен явный "
+                        + "intent " + CommandContract.ACTION_SHOW + ".",
                 13, Ui.SECONDARY);
         note.setLineSpacing(0f, 1.08f);
         card.addView(note, Ui.fullWrap());
         Ui.topMargin(note, this, 8);
 
-        Button add = Ui.button(this, "+ Добавить приложение");
-        add.setOnClickListener(v -> pickApplication());
-        card.addView(add, Ui.fullWrap());
-        Ui.topMargin(add, this, 12);
+        addPresetButton = Ui.button(this, "+ Добавить приложение");
+        addPresetButton.setOnClickListener(v -> pickApplication());
+        card.addView(addPresetButton, Ui.fullWrap());
+        Ui.topMargin(addPresetButton, this, 12);
 
         presetList = new LinearLayout(this);
         presetList.setOrientation(LinearLayout.VERTICAL);
@@ -481,13 +486,24 @@ public final class MainActivity extends ScaledActivity {
 
     @SuppressWarnings("deprecation")
     private void pickApplication() {
+        if (prefs.presets().size() >= Preset.MAX_COUNT) {
+            Toast.makeText(this, "Все пять слотов заняты", Toast.LENGTH_SHORT).show();
+            return;
+        }
         startActivityForResult(new Intent(this, AppPickerActivity.class), REQUEST_PICK_APP);
     }
 
     private void renderPresets() {
         if (presetList == null) return;
         List<Preset> presets = prefs.presets();
-        ShortcutPublisher.sync(this, presets);
+        LauncherPresetPublisher.sync(this, presets);
+        if (addPresetButton != null) {
+            boolean available = presets.size() < Preset.MAX_COUNT;
+            addPresetButton.setEnabled(available);
+            addPresetButton.setText(available
+                    ? "+ Добавить приложение (" + presets.size() + "/" + Preset.MAX_COUNT + ")"
+                    : "Все пять слотов заняты");
+        }
         presetList.removeAllViews();
         BackendStatus status = OverlayService.lastStatus();
         String activeId = status != null && status.state == BackendStatus.State.ACTIVE
@@ -542,7 +558,9 @@ public final class MainActivity extends ScaledActivity {
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         labelsParams.leftMargin = Ui.dp(this, 12);
         identity.addView(labels, labelsParams);
-        labels.addView(Ui.heading(this, preset.label + (active ? "  • активно" : ""), 16));
+        labels.addView(Ui.heading(this,
+                "Пресет " + preset.slot + "  •  " + preset.label
+                        + (active ? "  • активно" : ""), 16));
         TextView component = Ui.text(this, preset.component, 11, Ui.SECONDARY);
         component.setSingleLine(true);
         component.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
@@ -561,18 +579,6 @@ public final class MainActivity extends ScaledActivity {
         launch.setOnClickListener(v -> OverlayService.show(this, preset.id));
         actions.addView(launch, new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        Button pin = Ui.button(this, "Ярлык");
-        LinearLayout.LayoutParams pinParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        pinParams.leftMargin = Ui.dp(this, 8);
-        actions.addView(pin, pinParams);
-        pin.setOnClickListener(v -> {
-            boolean requested = ShortcutPublisher.requestPinned(this, preset);
-            Toast.makeText(this,
-                    requested ? "Запрос на добавление ярлыка отправлен"
-                            : "Лаунчер не поддерживает закрепляемые ярлыки",
-                    Toast.LENGTH_LONG).show();
-        });
         Button delete = Ui.button(this, "Удалить");
         LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -590,12 +596,12 @@ public final class MainActivity extends ScaledActivity {
                 : "";
         new AlertDialog.Builder(this)
                 .setTitle("Удалить «" + preset.label + "»?")
-                .setMessage("Пресет и его динамический ярлык будут удалены." + consequence)
+                .setMessage("Пресет " + preset.slot
+                        + " и его отдельная иконка лаунчера будут удалены." + consequence)
                 .setNegativeButton("Отмена", null)
                 .setPositiveButton("Удалить", (dialog, which) -> {
                     if (active) OverlayService.stop(this);
                     prefs.deletePreset(preset.id);
-                    ShortcutPublisher.presetDeleted(this, preset);
                     renderPresets();
                 })
                 .show();

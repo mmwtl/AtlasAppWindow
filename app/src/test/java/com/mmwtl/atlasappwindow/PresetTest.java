@@ -19,12 +19,15 @@ public class PresetTest {
     @Test
     public void validatesStoredPresetAndNormalizesLabel() {
         Preset preset = new Preset(
-                "maps-1", "com.example/.MainActivity", "  Карты  ");
+                "maps-1", "com.example/.MainActivity", "  Карты  ", 3);
 
         assertEquals("maps-1", preset.id);
         assertEquals("com.example/.MainActivity", preset.component);
         assertEquals("Карты", preset.label);
+        assertEquals(3, preset.slot);
         assertThrows(IllegalArgumentException.class,
                 () -> new Preset("Maps", "com.example/.MainActivity", "Карты"));
+        assertThrows(IllegalArgumentException.class,
+                () -> new Preset("maps", "com.example/.MainActivity", "Карты", 6));
     }
 }

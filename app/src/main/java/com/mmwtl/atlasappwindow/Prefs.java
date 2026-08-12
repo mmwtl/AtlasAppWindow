@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 final class Prefs {
@@ -114,17 +115,24 @@ final class Prefs {
 
     synchronized List<Preset> presets() {
         ArrayList<Preset> result = new ArrayList<>();
+        boolean[] occupied = new boolean[Preset.MAX_COUNT + 1];
         String raw = getString(KEY_PRESETS, "[]");
         try {
             JSONArray array = new JSONArray(raw);
             for (int index = 0; index < array.length(); index++) {
+                if (result.size() >= Preset.MAX_COUNT) break;
                 JSONObject item = array.optJSONObject(index);
                 if (item == null) continue;
                 try {
+                    int slot = item.optInt("slot", 0);
+                    if (slot < 1 || slot > Preset.MAX_COUNT || occupied[slot]) continue;
                     Preset preset = new Preset(
                             item.optString("id", ""), item.optString("component", ""),
-                            item.optString("label", ""));
-                    if (find(result, preset.id) == null) result.add(preset);
+                            item.optString("label", ""), slot);
+                    if (find(result, preset.id) == null) {
+                        result.add(preset);
+                        occupied[slot] = true;
+                    }
                 } catch (IllegalArgumentException ignored) {
                     // Ignore a corrupt entry without discarding the rest of the settings.
                 }
@@ -132,6 +140,7 @@ final class Prefs {
         } catch (JSONException error) {
             AppLog.warnRateLimited("presets-json", "Preset settings are corrupt", error);
         }
+        result.sort(Comparator.comparingInt(item -> item.slot));
         return result;
     }
 
@@ -139,11 +148,24 @@ final class Prefs {
         return find(presets(), id);
     }
 
-    synchronized void savePreset(Preset preset) {
+    synchronized Preset presetAtSlot(int slot) {
+        if (slot < 1 || slot > Preset.MAX_COUNT) return null;
+        for (Preset preset : presets()) if (preset.slot == slot) return preset;
+        return null;
+    }
+
+    synchronized Preset savePreset(Preset preset) {
         List<Preset> current = presets();
+        Preset existing = find(current, preset.id);
+        int slot = existing == null ? preset.slot : existing.slot;
         current.removeIf(item -> item.id.equals(preset.id));
-        current.add(preset);
+        if (slot == 0) slot = PresetSlots.firstFree(current);
+        if (slot == 0) throw new IllegalStateException("Preset limit reached");
+        Preset assigned = preset.inSlot(slot);
+        current.add(assigned);
+        current.sort(Comparator.comparingInt(item -> item.slot));
         writePresets(current);
+        return assigned;
     }
 
     synchronized void deletePreset(String id) {
@@ -160,6 +182,7 @@ final class Prefs {
                 item.put("id", preset.id);
                 item.put("component", preset.component);
                 item.put("label", preset.label);
+                item.put("slot", preset.slot);
                 array.put(item);
             } catch (JSONException impossible) {
                 throw new IllegalStateException(impossible);
@@ -173,4 +196,5 @@ final class Prefs {
         for (Preset preset : presets) if (id.equals(preset.id)) return preset;
         return null;
     }
+
 }

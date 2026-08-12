@@ -3,4 +3,9 @@
     <string name="app_name">Atlas App Window</string>
     <string name="overlay_notification_channel">Atlas App Window overlay</string>
     <string name="overlay_notification_title">Atlas App Window is active</string>
+    <string name="preset_launcher_1">Atlas: Пресет 1</string>
+    <string name="preset_launcher_2">Atlas: Пресет 2</string>
+    <string name="preset_launcher_3">Atlas: Пресет 3</string>
+    <string name="preset_launcher_4">Atlas: Пресет 4</string>
+    <string name="preset_launcher_5">Atlas: Пресет 5</string>
 </resources>

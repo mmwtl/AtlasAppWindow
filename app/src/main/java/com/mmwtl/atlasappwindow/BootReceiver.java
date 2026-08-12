@@ -9,6 +9,7 @@ public final class BootReceiver extends BroadcastReceiver {
     @Override public void onReceive(Context context, Intent intent) {
         if (intent == null) return;
         Prefs prefs = new Prefs(context);
+        LauncherPresetPublisher.sync(context, prefs.presets());
         String action = intent.getAction();
         boolean boot = Intent.ACTION_BOOT_COMPLETED.equals(action)
                 || Intent.ACTION_LOCKED_BOOT_COMPLETED.equals(action)

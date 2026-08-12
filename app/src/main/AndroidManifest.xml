@@ -43,6 +43,83 @@
             android:exported="false" />
 
         <activity
+            android:name=".PresetLauncherActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:theme="@style/Theme.AtlasAppWindow.Transparent" />
+
+        <activity-alias
+            android:name=".PresetLauncher1"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/preset_launcher_1"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".PresetLauncherActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".PresetLauncher2"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/preset_launcher_2"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".PresetLauncherActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".PresetLauncher3"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/preset_launcher_3"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".PresetLauncherActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".PresetLauncher4"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/preset_launcher_4"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".PresetLauncherActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".PresetLauncher5"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/preset_launcher_5"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".PresetLauncherActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity
             android:name=".CommandActivity"
             android:excludeFromRecents="true"
             android:exported="true"
