@@ -178,10 +178,37 @@ final class FreeformBackend implements WindowBackend {
         }
 
         if (exactIds.size() != 1) {
-            rejectVisibleResult(generation,
-                    "Найдено несколько задач с тем же launcher-компонентом; "
-                            + "безопасно выбрать созданную Atlas нельзя",
-                    preset);
+            Set<Integer> verifiedIds = TaskOutputParser.verifiedTaskIdsForComponent(
+                    dump, preset.component, bounds);
+            if (verifiedIds.size() == 1) {
+                int verifiedTaskId = verifiedIds.iterator().next();
+                adopt(generation, shell, preset, bounds, verifiedTaskId, previous);
+                return;
+            }
+
+            boolean allExplicitlyWrong = true;
+            for (int id : exactIds) {
+                TaskOutputParser.Verification verification =
+                        TaskOutputParser.verifyTask(dump, id, preset.component, bounds);
+                if (!isExplicitGeometryFailure(verification)) {
+                    allExplicitlyWrong = false;
+                    break;
+                }
+            }
+            if (allExplicitlyWrong) {
+                rejectVisibleResult(generation,
+                        "Несколько задач launcher-компонента имеют fullscreen/неверные границы",
+                        preset);
+                return;
+            }
+
+            // A successful direct launch remains useful even when the OEM dump cannot identify
+            // one task safely. Keep the visible result, but never resize/remove an unowned task.
+            prefs.putInt(Prefs.KEY_ACTIVE_TASK_ID, Prefs.NO_TASK);
+            publish(generation, BackendStatus.State.ACTIVE,
+                    preset.label + " • найдено несколько подходящих задач; "
+                            + "окно оставлено открытым, управление task отключено",
+                    preset, Prefs.NO_TASK);
             return;
         }
 

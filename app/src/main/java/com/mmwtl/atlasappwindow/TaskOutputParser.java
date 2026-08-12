@@ -69,6 +69,19 @@ final class TaskOutputParser {
         return Collections.unmodifiableSet(result);
     }
 
+    /** Returns exact-component tasks whose freeform mode and bounds are fully confirmed. */
+    static Set<Integer> verifiedTaskIdsForComponent(
+            String output, String component, WindowBounds expectedBounds) {
+        if (expectedBounds == null) throw new NullPointerException("expectedBounds");
+        Set<Integer> result = new LinkedHashSet<>();
+        for (int taskId : taskIdsForComponent(output, component)) {
+            if (verifyTask(output, taskId, component, expectedBounds) == Verification.VERIFIED) {
+                result.add(taskId);
+            }
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
     static Set<Integer> taskIdsForPackage(String output, String packageName) {
         String validated = CommandValidation.requirePackageName(packageName);
         Set<Integer> result = new LinkedHashSet<>();

@@ -58,6 +58,24 @@ public class TaskOutputParserTest {
                 dump, "com.target/.MainActivity"));
         assertEquals(Set.of(11, 12), TaskOutputParser.taskIdsForComponent(
                 dump, "com.target/.MainActivity"));
+        assertEquals(Set.of(11, 12), TaskOutputParser.verifiedTaskIdsForComponent(
+                dump, "com.target/.MainActivity", EXPECTED));
+    }
+
+    @Test
+    public void uniquelySelectsVerifiedGeometryAmongDuplicateComponents() {
+        String dump = ""
+                + "  * Task{aaa #11 mode=fullscreen A=1000:com.target U=0}\n"
+                + "    bounds=[0,0][1440,1920]\n"
+                + "    realActivity=com.target/.MainActivity\n"
+                + "  * Task{bbb #12 mode=freeform A=1000:com.target U=0}\n"
+                + "    bounds=[24,600][696,1450]\n"
+                + "    realActivity=com.target/.MainActivity\n";
+
+        assertEquals(Set.of(11, 12), TaskOutputParser.taskIdsForComponent(
+                dump, "com.target/.MainActivity"));
+        assertEquals(Set.of(12), TaskOutputParser.verifiedTaskIdsForComponent(
+                dump, "com.target/.MainActivity", EXPECTED));
     }
 
     @Test
