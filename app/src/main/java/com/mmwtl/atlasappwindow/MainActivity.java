@@ -594,17 +594,19 @@ public final class MainActivity extends ScaledActivity {
         String consequence = active
                 ? " Активное окно будет остановлено."
                 : "";
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Удалить «" + preset.label + "»?")
                 .setMessage("Пресет " + preset.slot
                         + " и его отдельная иконка лаунчера будут удалены." + consequence)
                 .setNegativeButton("Отмена", null)
-                .setPositiveButton("Удалить", (dialog, which) -> {
+                .setPositiveButton("Удалить", (ignoredDialog, which) -> {
                     if (active) OverlayService.stop(this);
                     prefs.deletePreset(preset.id);
                     renderPresets();
                 })
-                .show();
+                .create();
+        dialog.setOnShowListener(ignored -> Ui.compactDialog(dialog, this));
+        dialog.show();
     }
 
     private void addMarginControl(

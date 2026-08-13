@@ -2,15 +2,12 @@ package com.mmwtl.atlasappwindow;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,8 +27,6 @@ import java.util.concurrent.Executors;
 public final class AppPickerActivity extends ScaledActivity {
     static final String EXTRA_COMPONENT = "component";
     static final String EXTRA_LABEL = "label";
-    private static final int CONFIRMATION_MAX_WIDTH_DP = 360;
-    private static final int CONFIRMATION_SIDE_MARGIN_DP = 24;
 
     private final ExecutorService loader = Executors.newSingleThreadExecutor();
     private ListView list;
@@ -135,24 +130,8 @@ public final class AppPickerActivity extends ScaledActivity {
                     setResult(RESULT_OK, result);
                     finish();
                 }).create();
-        dialog.setOnShowListener(ignored -> compactConfirmation(dialog));
+        dialog.setOnShowListener(ignored -> Ui.compactDialog(dialog, this));
         dialog.show();
-    }
-
-    private void compactConfirmation(AlertDialog dialog) {
-        TextView message = dialog.findViewById(android.R.id.message);
-        if (message != null) {
-            message.setTextSize(12);
-            message.setLineSpacing(0f, 1.08f);
-        }
-
-        Window window = dialog.getWindow();
-        if (window == null) return;
-        Rect display = getSystemService(WindowManager.class).getCurrentWindowMetrics().getBounds();
-        int sideMargin = Ui.dp(this, CONFIRMATION_SIDE_MARGIN_DP);
-        int availableWidth = Math.max(1, display.width() - sideMargin * 2);
-        int width = Math.min(Ui.dp(this, CONFIRMATION_MAX_WIDTH_DP), availableWidth);
-        window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
     private final class AppAdapter extends BaseAdapter {

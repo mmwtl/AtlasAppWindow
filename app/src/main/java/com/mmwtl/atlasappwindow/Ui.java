@@ -1,15 +1,19 @@
 package com.mmwtl.atlasappwindow;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Insets;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,6 +27,8 @@ final class Ui {
     static final int ACCENT = Color.rgb(120, 147, 160);
     static final int OUTLINE = Color.rgb(115, 115, 115);
     static final int ERROR = Color.rgb(217, 130, 130);
+    private static final int COMPACT_DIALOG_MAX_WIDTH_DP = 360;
+    private static final int COMPACT_DIALOG_SIDE_MARGIN_DP = 24;
 
     private Ui() {}
 
@@ -94,6 +100,23 @@ final class Ui {
         button.setTextColor(Color.rgb(7, 16, 20));
         button.setBackground(background(ACCENT, 8, context));
         return button;
+    }
+
+    static void compactDialog(AlertDialog dialog, Context context) {
+        TextView message = dialog.findViewById(android.R.id.message);
+        if (message != null) {
+            message.setTextSize(12);
+            message.setLineSpacing(0f, 1.08f);
+        }
+
+        Window window = dialog.getWindow();
+        if (window == null) return;
+        Rect display = context.getSystemService(WindowManager.class)
+                .getCurrentWindowMetrics().getBounds();
+        int sideMargin = dp(context, COMPACT_DIALOG_SIDE_MARGIN_DP);
+        int availableWidth = Math.max(1, display.width() - sideMargin * 2);
+        int width = Math.min(dp(context, COMPACT_DIALOG_MAX_WIDTH_DP), availableWidth);
+        window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
     static LinearLayout card(Context context) {
