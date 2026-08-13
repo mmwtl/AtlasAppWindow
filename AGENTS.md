@@ -43,8 +43,15 @@ facts, and implementation assumptions visibly separate.
 ## Versioning and artifacts
 
 - Keep `appVersionCode` and `appVersionName` at the top of `app/build.gradle`.
-- Increment both for each completed user-requested application improvement.
-- Preserve archive naming `<versionName>[<versionCode>]AtlasAppWindow`.
+- `main` is the only release branch. Increase the base `versionCode` and base
+  `versionName` only when building from `main`.
+- Do not change the base version values from any other branch. For builds from
+  other branches, derive `effectiveVersionName` by appending a sanitized branch
+  name to the base version name, for example `1.0.26-seek`.
+- Include the sanitized branch suffix in the APK/archive name when the project
+  produces one, but never include the branch name in `versionCode`.
+- Name artifacts through the effective version as
+  `<effectiveVersionName>[<versionCode>]AtlasMediaWidget`.
 - Never commit signing keys, local SDK paths, generated APKs, Gradle caches, ADB private keys, or
   device dumps.
 
