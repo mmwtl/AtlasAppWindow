@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/app-icon.png" width="160" alt="Иконка Atlas App Window">
+</p>
+
 <h1 align="center">Atlas App Window</h1>
 
 <p align="center">
@@ -21,6 +25,14 @@ Atlas App Window запускает выбранную `Activity` как отд�
 Главный экран объединяет состояние backend, подключение к опциональному локальному ADB, список
 пресетов, живой preview границ окна и настройки шапки, масштаба и поведения.
 
+Основной экран настроек:
+
+<p align="center">
+  <a href="docs/images/settings-overview.png">
+    <img src="docs/images/settings-overview.png" width="720" alt="Главный экран настроек Atlas App Window">
+  </a>
+</p>
+
 Выбор приложения выполняется через отдельный список доступных `MAIN`/`LAUNCHER` activity с
 поиском по названию, пакету и имени Activity. Для каждого пресета Atlas включает отдельную
 обычную launcher-иконку «Atlas: Пресет 1…5».
@@ -28,6 +40,28 @@ Atlas App Window запускает выбранную `Activity` как отд�
 Поверх freeform-задачи Atlas показывает серую шапку или компактную группу кнопок. Оформление
 создаётся рядом с задачей и не перекрывает весь экран, поэтому HOME снаружи заданных границ
 остаётся доступным.
+
+<table>
+  <tr>
+    <th>Выбор приложения</th>
+    <th>Компактное подтверждение</th>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/images/app-picker.png">
+        <img src="docs/images/app-picker.png" alt="Список приложений Atlas App Window">
+      </a>
+    </td>
+    <td>
+      <a href="docs/images/app-confirmation.png">
+        <img src="docs/images/app-confirmation.png" alt="Компактное подтверждение добавления приложения">
+      </a>
+    </td>
+  </tr>
+</table>
+
+Скриншоты сняты на Android 11 AVD и показывают интерфейс; поддержку freeform и поведение HOME
+нужно отдельно проверять на целевом OEM-ГУ.
 
 ## Возможности
 
